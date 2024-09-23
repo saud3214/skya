@@ -390,8 +390,8 @@ const ChatModal = () => {
           className="object-contain"
           src="/logo.png"
           alt="Vercel Logo"
-          width={300}
-          height={300}
+          width={200}
+          height={200}
         />
       </button>
 
@@ -503,7 +503,7 @@ const ChatModal = () => {
               </div>
             )}
             {step === 4 && uploadedData && (
-              <div className="relative bg-gradient-to-l from-[#5CDFE6] to-[#8C53FF] p-10 text-white h-[60vh] text-xl font-medium rounded-3xl w-10/12">
+              <div className="relative bg-gradient-to-l from-[#5CDFE6] to-[#8C53FF] p-10 text-white  text-xl font-medium rounded-3xl w-10/12">
                 <h2 className="text-2xl mb-4">
                   Please conform Following data :
                 </h2>
