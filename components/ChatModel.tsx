@@ -10,12 +10,26 @@ const ChatModal = () => {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [position, setPosition] = useState('');
+  const [uploadedData, setUploadedData] = useState<UploadedData | null>(null);
 
   interface SaveAnswerProps {
     previousStep: { value: string };
     triggerNextStep: () => void;
     field: string;
     onSave: (field: string, value: string) => void;
+  }
+
+  interface UploadedData {
+    Name: string;
+    Education: string[];
+    Skills: string[];
+    Certificates?: string;
+    Contact_Details: {
+      Location: string;
+      Phone: string;
+      Email: string;
+    };
+    Projects: string[];
   }
   const handleNextStep = () => {
     if (step === 1 && name.trim()) {
@@ -25,21 +39,43 @@ const ChatModal = () => {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log('File uploaded:', file.name);
+      const formData = new FormData();
+      formData.append('file', file);
 
-      // Set step to 4 to proceed to the chatbot interface
-      setStep(4);
+      try {
+        const response = await fetch('https://deploy.wolfiz.org/skya/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: UploadedData = await response.json();
+        console.log('File uploaded successfully:', data);
+        setUploadedData(data);
+
+        setStep(4);
+        // Set step to 4 to proceed to the chatbot interface
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('There was an issue uploading the file. Please try again.');
+      }
     }
   };
-  const [userResponses, setUserResponses] = useState({
-    experience: '',
-    tools: '',
-    project: '',
-  });
-
+  const resetState = () => {
+    setIsOpen(false);
+    setStep(1);
+    setName('');
+    setPosition('');
+    setUploadedData(null);
+  };
   const SaveAnswer: React.FC<SaveAnswerProps> = ({
     previousStep,
     triggerNextStep,
@@ -204,108 +240,9 @@ const ChatModal = () => {
       waitAction: true,
       trigger: '6',
     },
+
     {
       id: '6',
-      message:
-        'How do you stay updated with current design trends and technologies?',
-      trigger: 'userDesignTrends',
-    },
-    {
-      id: 'userDesignTrends',
-      user: true,
-      trigger: 'saveDesignTrends',
-    },
-    {
-      id: 'saveDesignTrends',
-      component: (
-        <SaveAnswer
-          field="designTrends"
-          previousStep={{ value: 'userDesignTrends' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '7',
-    },
-    {
-      id: '7',
-      message:
-        'How do you handle feedback and revisions during the design process?',
-      trigger: 'userFeedback',
-    },
-    {
-      id: 'userFeedback',
-      user: true,
-      trigger: 'saveFeedback',
-    },
-    {
-      id: 'saveFeedback',
-      component: (
-        <SaveAnswer
-          field="feedback"
-          previousStep={{ value: 'userFeedback' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '8',
-    },
-    {
-      id: '8',
-      message:
-        'What strategies do you use to ensure your designs are both innovative and user-friendly?',
-      trigger: 'userStrategies',
-    },
-    {
-      id: 'userStrategies',
-      user: true,
-      trigger: 'saveStrategies',
-    },
-    {
-      id: 'saveStrategies',
-      component: (
-        <SaveAnswer
-          field="strategies"
-          previousStep={{ value: 'userStrategies' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '9',
-    },
-    {
-      id: '9',
-      message:
-        'Can you discuss a time when you had to balance multiple design projects simultaneously?',
-      trigger: 'userProjectManagement',
-    },
-    {
-      id: 'userProjectManagement',
-      user: true,
-      trigger: 'saveProjectManagement',
-    },
-    {
-      id: 'saveProjectManagement',
-      component: (
-        <SaveAnswer
-          field="projectManagement"
-          previousStep={{ value: 'userProjectManagement' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '10',
-    },
-    {
-      id: '10',
       message:
         'Thank you for answering all the questions! We will review your responses and get back to you.',
       end: true,
@@ -434,108 +371,10 @@ const ChatModal = () => {
       waitAction: true,
       trigger: '6',
     },
+
     {
       id: '6',
-      message: 'What strategies do you use for effective data visualization?',
-      trigger: 'userDataVisualization',
-    },
-    {
-      id: 'userDataVisualization',
-      user: true,
-      trigger: 'saveDataVisualization',
-    },
-    {
-      id: 'saveDataVisualization',
-      component: (
-        <SaveAnswer
-          field="dataVisualization"
-          previousStep={{ value: 'userDataVisualization' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '7',
-    },
-    {
-      id: '7',
-      message: 'How do you ensure accuracy and integrity in your analyses?',
-      trigger: 'userAccuracy',
-    },
-    {
-      id: 'userAccuracy',
-      user: true,
-      trigger: 'saveAccuracy',
-    },
-    {
-      id: 'saveAccuracy',
-      component: (
-        <SaveAnswer
-          field="accuracy"
-          previousStep={{ value: 'userAccuracy' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '8',
-    },
-    {
-      id: '8',
-      message:
-        'What is your experience with data modeling and statistical analysis?',
-      trigger: 'userDataModeling',
-    },
-    {
-      id: 'userDataModeling',
-      user: true,
-      trigger: 'saveDataModeling',
-    },
-    {
-      id: 'saveDataModeling',
-      component: (
-        <SaveAnswer
-          field="dataModeling"
-          previousStep={{ value: 'userDataModeling' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '9',
-    },
-    {
-      id: '9',
-      message:
-        'How do you stay updated with the latest industry trends and technologies?',
-      trigger: 'userIndustryTrends',
-    },
-    {
-      id: 'userIndustryTrends',
-      user: true,
-      trigger: 'saveIndustryTrends',
-    },
-    {
-      id: 'saveIndustryTrends',
-      component: (
-        <SaveAnswer
-          field="industryTrends"
-          previousStep={{ value: 'userIndustryTrends' }}
-          onSave={handleSave}
-          triggerNextStep={() => {}}
-        />
-      ),
-      asMessage: true,
-      waitAction: true,
-      trigger: '10',
-    },
-    {
-      id: '10',
-      message:
-        'Thank you for answering all the questions! We will review your responses and get back to you.',
+      message: 'Thank you for answering all the questions!',
       end: true,
     },
   ];
@@ -578,20 +417,20 @@ const ChatModal = () => {
                 />
                 <button
                   onClick={handleNextStep}
-                  className={`bg-blue-500 text-white px-4 py-2 rounded absolute bottom-[5%] left-2 ${
+                  className={`bg-blue-500 text-white px-4 py-2 rounded absolute bottom-[4%] left-[40%] ${
                     !name.trim()
                       ? 'opacity-50 cursor-not-allowed'
                       : 'hover:bg-blue-600'
                   } transition`}
                   disabled={!name.trim()}
                 >
-                  Chat
+                  Next
                 </button>
               </div>
             )}
 
             {step === 2 && (
-              <div className="relative bg-gradient-to-l from-[#5CDFE6] to-[#8C53FF] p-10 text-white h-[60vh] text-xl font-medium ">
+              <div className="relative bg-gradient-to-l from-[#5CDFE6] to-[#8C53FF] p-10 w-10/12 text-white h-[60vh] text-xl font-medium rounded-3xl ">
                 <h2 className="text-2xl font-semibold mb-4 capitalize">
                   Welcome, {name}!
                 </h2>
@@ -650,7 +489,7 @@ const ChatModal = () => {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={handleFileUpload}
-                  className="border border-gray-300 p-2 rounded w-full mb-4 absolute top-[47%] opacity-0 cursor-pointer"
+                  className="border border-gray-300 p-2 rounded w-full mb-4 absolute top-[47%] h-24 opacity-0 cursor-pointer"
                 />
                 {/* <button
                   onClick={() => {
@@ -663,13 +502,87 @@ const ChatModal = () => {
                 </button> */}
               </div>
             )}
-            {step === 4 && (
+            {step === 4 && uploadedData && (
+              <div className="relative bg-gradient-to-l from-[#5CDFE6] to-[#8C53FF] p-10 text-white h-[60vh] text-xl font-medium rounded-3xl w-10/12">
+                <h2 className="text-2xl mb-4">
+                  Please conform Following data :
+                </h2>
+
+                <div>
+                  <div>
+                    <strong>Name:</strong> {uploadedData.Name}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <strong>Education:</strong>
+                    {Array.isArray(uploadedData.Education)
+                      ? uploadedData.Education.join(', ')
+                      : uploadedData.Education}
+                  </div>
+
+                  <div className="flex flex-col ">
+                    <strong>Skills:</strong> {uploadedData.Skills.join(', ')}
+                  </div>
+
+                  {uploadedData.Certificates && (
+                    <div>
+                      <strong>Certificates:</strong> {uploadedData.Certificates}
+                    </div>
+                  )}
+
+                  <div>
+                    <strong>Contact Details:</strong>
+                    <div>Location: {uploadedData.Contact_Details.Location}</div>
+                    <div>Phone: {uploadedData.Contact_Details.Phone}</div>
+                    <div>Email: {uploadedData.Contact_Details.Email}</div>
+                  </div>
+
+                  {/* <div>
+                    <strong>Projects:</strong>{' '}
+                    {uploadedData.Projects.join(', ')}
+                  </div> */}
+                </div>
+
+                <button
+                  className="text-white cursor-pointer h-16 border-2 border-[#8C53FF] px-4 py-2 rounded-lg shadow-md hover:bg-[#8C53FF] transition mt-5"
+                  onClick={() => setStep(5)} // Corrected the missing parenthesis
+                >
+                  Confirm Data
+                </button>
+              </div>
+            )}
+
+            {step === 5 && (
               <div className="text-black">
                 {position === 'Data Analyst' ? (
-                  <ChatBot steps={chatSteps} />
+                  <ChatBot
+                    steps={chatSteps}
+                    handleEnd={() => setStep(6)} // Pass a function reference
+                  />
                 ) : (
-                  <ChatBot steps={chatSteps2} />
+                  <ChatBot
+                    steps={chatSteps2}
+                    handleEnd={() => setStep(6)} // Pass a function reference
+                  />
                 )}
+              </div>
+            )}
+
+            {step === 6 && (
+              <div className="relative bg-gradient-to-l from-[#5CDFE6] to-[#8C53FF] p-10 text-white h-[60vh] text-2xl flex flex-col font-medium  items-center justify-center gap-5 text-center rounded-3xl w-10/12">
+                Thank You We Will Get Back To You Soon.
+                <button
+                  onClick={resetState}
+                  className="text-white cursor-pointer h-16 border-2 border-[#8C53FF] px-4 py-2 rounded-lg shadow-md hover:bg-[#8C53FF] transition mt-5"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => setStep(2)}
+                  className="text-white cursor-pointer h-16 border-2 border-[#8C53FF] px-4 py-2 rounded-lg shadow-md hover:bg-[#8C53FF] transition"
+                >
+                  Apply for Another Position
+                </button>
               </div>
             )}
 
